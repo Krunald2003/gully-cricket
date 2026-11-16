@@ -1,0 +1,14 @@
+{
+  "name": "Gully Cricket",
+  "short_name": "Gully Cricket",
+  "description": "Dopahar ke 3 baje, gully mein match.",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1e2d26",
+  "theme_color": "#1e2d26",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

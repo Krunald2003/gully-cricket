@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#1e2d26">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<title>Gully Cricket</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #1e2d26; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; }
+  #wrap { position: relative; width: min(100vw, calc(100dvh * 9 / 16)); aspect-ratio: 9 / 16; }
+  canvas { display: block; width: 100%; height: 100%; touch-action: none; user-select: none; -webkit-user-select: none; }
+  /* sits in the gap the title screen leaves for it; 18px keeps iOS from zooming on focus */
+  #name { position: absolute; left: 20%; width: 60%; top: 74.7%; height: 6.3%; box-sizing: border-box; text-align: center;
+    font: bold 18px "Trebuchet MS", Verdana, sans-serif; color: #2a1c12; background: #fffdf2; border: 3px solid #2a1c12; border-radius: 12px; }
+  /* just under the scoreboard, away from where thumbs tap to bat */
+  #mute { position: absolute; left: 2.2%; top: 10.5%; width: 10%; aspect-ratio: 1; padding: 0; border: 0; border-radius: 50%;
+    background: rgba(26, 40, 33, .85); font-size: 16px; line-height: 1; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c" aria-label="Gully Cricket game. Batting: tap where you want to hit when the ball arrives. Bowling: drag to aim, release to bowl."></canvas>
+  <input id="name" maxlength="10" placeholder="Chintu" aria-label="Your name" autocomplete="off">
+  <button id="mute" aria-label="Mute sound" aria-pressed="false">🔊</button>
+</div>
+<script src="logic.js"></script>
+<script src="game.js"></script>
+<script>
+  // On your own PC the saved copy would hide the edit you just made, so it is switched off there.
+  if ('serviceWorker' in navigator) {
+    if (location.hostname === 'localhost') navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+    else navigator.serviceWorker.register('sw.js');
+  }
+</script>
+</body>
+</html>
