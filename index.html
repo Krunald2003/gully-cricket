@@ -20,6 +20,10 @@
   /* just under the scoreboard, away from where thumbs tap to bat */
   #mute { position: absolute; left: 2.2%; top: 10.5%; width: 10%; aspect-ratio: 1; padding: 0; border: 0; border-radius: 50%;
     background: rgba(26, 40, 33, .85); font-size: 16px; line-height: 1; }
+  /* a phone held sideways leaves the game a thin strip, so ask for portrait instead */
+  #rotate { display: none; position: fixed; inset: 0; align-items: center; justify-content: center; text-align: center;
+    background: #1e2d26; color: #ffd23f; font: bold 20px "Trebuchet MS", Verdana, sans-serif; }
+  @media (orientation: landscape) and (max-height: 500px) { #rotate { display: flex; } }
 </style>
 </head>
 <body>
@@ -28,6 +32,7 @@
   <input id="name" maxlength="10" placeholder="Chintu" aria-label="Your name" autocomplete="off">
   <button id="mute" aria-label="Mute sound" aria-pressed="false">🔊</button>
 </div>
+<div id="rotate">Phone seedha pakdo!<br>Turn your phone upright to play.</div>
 <script src="logic.js"></script>
 <script src="game.js"></script>
 <script>

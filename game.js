@@ -107,8 +107,8 @@ const SHIRT = ['#e2463f', '#2f7fd1', '#f2b632', '#3aa66a', '#8e5bc4', '#ef7f2e',
 const INK = '#2a1c12', HAIRC = ['#1d1612', '#3a2114', '#5a1f1f'];
 const look = i => ({ skin: SKIN[i % 4], shirt: SHIRT[i % 7], shorts: SHORTS[i % 4], hair: i % 4, hairC: HAIRC[i % 3] });
 
-// A big cartoon head centred on 0,0 (radius about 20), shared by the kids, the aunty and the speaker portrait.
-// k: skin, hair (0 curly, 1 spiky, 2 bowl cut, 3 side part, 4 bun), hairC, back, bindi, talk,
+// A big cartoon head centred on 0,0 (radius about 20), shared by the kids and the aunty.
+// k: skin, hair (0 curly, 1 spiky, 2 bowl cut, 3 side part, 4 bun), hairC, back, bindi,
 // expr: normal | happy | sad | smug | shock | angry
 function head(g, k) {
   const e = k.expr || 'normal', ink = () => { g.strokeStyle = INK; g.lineWidth = 2.2; g.stroke(); };
@@ -143,8 +143,7 @@ function head(g, k) {
     g.lineWidth = 2.6; line(g, x - 5, by + sd * t, x + 5, by - sd * t);
   });
   g.lineWidth = 2.2; g.strokeStyle = INK;
-  if (k.talk) { blob(g, 0, 10, 5, 1.5 + 4 * Math.abs(Math.sin(now / 80)), '#7a1f1f'); ink(); }
-  else if (e === 'happy') { // wide open grin with teeth
+  if (e === 'happy') { // wide open grin with teeth
     g.beginPath(); g.arc(0, 7, 8, 0, Math.PI); g.closePath(); g.fillStyle = '#7a1f1f'; g.fill(); ink();
     g.fillStyle = '#fff'; g.fillRect(-5.5, 7.6, 11, 2.6);
   } else if (e === 'shock') { blob(g, 0, 11, 3.5, 4.5, '#7a1f1f'); ink(); }
@@ -218,45 +217,12 @@ const FIELD = [{ x: 0.08, z: 1 }, { x: -0.7, z: 0.62 }, { x: 0.72, z: 0.5 }, { x
 const COVERS = FIELD.map(f => clamp(f.x / f.z, -1, 1));
 const KEEPER = { x: 0.42, z: -0.1 };
 const MSG = { six: 'CHHAKKA!', four: 'CHAUKA!', one: 'EK RUN', dot: 'DOT BALL', miss: 'MISS!', caught: 'CATCH OUT!', house: 'OUT!', bowled: 'BOWLED!' };
-// Devanagari spellings so the Hindi voice says the names properly
-const NAME_HI = { Bittu: 'बिट्टू', Billu: 'बिल्लू', Pappu: 'पप्पू', Golu: 'गोलू', Chintu: 'चिंटू', Monu: 'मोनू', Sonu: 'सोनू', Tinku: 'टिंकू',
-  Bunty: 'बंटी', Guddu: 'गुड्डू', Chhotu: 'छोटू', Raju: 'राजू', Lallu: 'लल्लू', Pintu: 'पिंटू', Bablu: 'बबलू', Munna: 'मुन्ना' };
-const POOL = Object.keys(NAME_HI);
+const POOL = ['Bittu', 'Billu', 'Pappu', 'Golu', 'Chintu', 'Monu', 'Sonu', 'Tinku', 'Bunty', 'Guddu', 'Chhotu', 'Raju', 'Lallu', 'Pintu', 'Bablu', 'Munna'];
 const WEATHER = { Dhoop: ['kadak dhoop'], Dhool: ['dhool bhari hawa', 'rgba(235,190,120,.22)'], Badal: ['badal aur boonda-baandi', 'rgba(70,85,110,.28)'] };
-// Said by the fielding side: {w} is the bowler, {b} the batter. house and aunty are the aunty's lines.
-const BANTER = {
-  pre: ['{w} chal dikha apni nagin wali bowling, kar de isko out!', 'Oye {b}, aaj tera crate udega!', '{w}, seedha crate pe daal, yeh hilta bhi nahi!',
-    'Jaldi daal {w}, mummy bula legi!', '{b} ko toh main ek haath se out kar doon!', 'Pehli ball try ball nahi hoti {b}!'],
-  six: ['Abe {w}, yeh kya phenk raha hai!', 'Ball kho gayi toh {b} layega!', 'Itna zor se kaun maarta hai bhai!'],
-  four: ['Arey pakdo pakdo!', '{w}, line pe daal na yaar!', 'Kisne chhodi? Maine nahi chhodi!'],
-  one: ['Throw kar jaldi!', 'Bas ek hi? Chalega.', 'Bhaag raha hai, idhar phenk!'],
-  dot: ['Shabaash {w}! Aise hi daal.', 'Hilne mat de isko!', '{b} se nahi ho payega!'],
-  miss: ['Hawa mein balla ghuma raha hai {b}!', 'Aankh khol ke khel {b}!', 'Ball idhar thi bhai, idhar!'],
-  caught: ['Pakad liya re! Chal nikal {b}!', 'Yeh mera catch tha, sabne dekha!', 'Agla bhejo, agla!'],
-  bowled: ['Crate ud gaya! {w} zindabad!', 'Chal {b}, balla de aur baith ja!', 'Try ball nahi thi, out hai out!'],
-  house: ['Ab ball nahi milegi! Roz roz ka natak!', 'Phir se? Tumhari mummy ko bolti hoon!', 'Yeh ball ab meri hai. Bhaago yahan se!'],
-  aunty: ['Sheesha toota toh sabke ghar aaungi!', 'Dopahar mein sone bhi nahi dete!'],
-};
-// The same lines, in the same order, as the Hindi voice should read them.
-// A line added above but not here is simply read out in its Roman form.
-const BOLO = {
-  pre: ['{w} चल दिखा अपनी नागिन वाली बॉलिंग, कर दे इसको आउट!', 'ओए {b}, आज तेरा क्रेट उड़ेगा!', '{w}, सीधा क्रेट पे डाल, ये हिलता भी नहीं!',
-    'जल्दी डाल {w}, मम्मी बुला लेगी!', '{b} को तो मैं एक हाथ से आउट कर दूँ!', 'पहली बॉल ट्राई बॉल नहीं होती {b}!'],
-  six: ['अबे {w}, ये क्या फेंक रहा है!', 'बॉल खो गई तो {b} लाएगा!', 'इतना ज़ोर से कौन मारता है भाई!'],
-  four: ['अरे पकड़ो पकड़ो!', '{w}, लाइन पे डाल ना यार!', 'किसने छोड़ी? मैंने नहीं छोड़ी!'],
-  one: ['थ्रो कर जल्दी!', 'बस एक ही? चलेगा.', 'भाग रहा है, इधर फेंक!'],
-  dot: ['शाबाश {w}! ऐसे ही डाल.', 'हिलने मत दे इसको!', '{b} से नहीं हो पाएगा!'],
-  miss: ['हवा में बल्ला घुमा रहा है {b}!', 'आँख खोल के खेल {b}!', 'बॉल इधर थी भाई, इधर!'],
-  caught: ['पकड़ लिया रे! चल निकल {b}!', 'ये मेरा कैच था, सबने देखा!', 'अगला भेजो, अगला!'],
-  bowled: ['क्रेट उड़ गया! {w} ज़िंदाबाद!', 'चल {b}, बल्ला दे और बैठ जा!', 'ट्राई बॉल नहीं थी, आउट है आउट!'],
-  house: ['अब बॉल नहीं मिलेगी! रोज़ रोज़ का नाटक!', 'फिर से? तुम्हारी मम्मी को बोलती हूँ!', 'ये बॉल अब मेरी है. भागो यहाँ से!'],
-  aunty: ['शीशा टूटा तो सबके घर आऊँगी!', 'दोपहर में सोने भी नहीं देते!'],
-};
-const EXPR = { pre: 'smug', six: 'shock', four: 'sad', one: 'normal', dot: 'smug', miss: 'smug', caught: 'happy', bowled: 'happy', house: 'angry', aunty: 'angry' }; // the speaker's face
 const AUNTY = { skin: '#c68b5e', shirt: '#b8336a', hair: 4, hairC: '#1d1612', bindi: true };
 const nameEl = document.getElementById('name');
 
-let now = 0, t0 = 0, mode = 'title', ball = null, swing = null, out = null, who = -1, aim = null, say = null, wait = 0;
+let now = 0, t0 = 0, mode = 'title', ball = null, swing = null, out = null, who = -1, aim = null, auntySide = 0; // auntySide: which wall's window she is scolding from
 let mine = [], opp = [], weather = 'Dhoop', call = '', coin = '';
 const PLAY = ['aim', 'runup', 'flight', 'hit', 'result']; // a ball is live; every other mode is a menu
 let batting = true, first = 'bat', inn = 0, scores = [], st = { runs: 0, wkts: 0, balls: 0, log: [] };
@@ -275,28 +241,9 @@ function newMatch() { // fresh teams and weather, then the toss
   try { localStorage.gullyName = me; } catch {}
   const pool = POOL.filter(n => n.toLowerCase() !== me.toLowerCase()).sort(() => Math.random() - 0.5);
   mine = [me, ...pool.slice(0, 6)]; opp = pool.slice(6, 13);
-  weather = Object.keys(WEATHER)[Math.random() * 3 | 0]; scores = []; setMode('toss');
-}
-
-function speak(sy) { // says the line out loud; sy.spoke turns true only once the device really starts talking
-  if (muted || !window.speechSynthesis) return;
-  const vs = speechSynthesis.getVoices(), pick = l => vs.find(v => v.lang.replace('_', '-').toLowerCase().startsWith(l));
-  const hi = pick('hi'), en = pick('en-in'); // an Indian English voice can still read the Roman line
-  if (vs.length && !hi && !en) return;
-  const u = new SpeechSynthesisUtterance(hi || !vs.length ? sy.hi : sy.t); // some Android browsers list no voices yet still speak Hindi
-  u.voice = hi || en || null; u.lang = u.voice ? u.voice.lang : 'hi-IN'; u.pitch = sy.pitch; u.rate = 1.1;
-  u.onstart = () => { sy.spoke = true; };
-  speechSynthesis.cancel(); speechSynthesis.speak(u);
-}
-
-function talk(ev, auntySide) { // a kid on the fielding side, or an aunty, has something to say
-  const j = Math.random() * BANTER[ev].length | 0, i = Math.random() * 3 | 0;
-  const crew = (batting ? opp : mine).filter(n => n !== bowlerName());
-  const fill = (line, hi) => line.replace('{w}', hi && NAME_HI[bowlerName()] || bowlerName()).replace('{b}', hi && NAME_HI[batterName()] || batterName());
-  say = { t: fill(BANTER[ev][j]), hi: fill(BOLO[ev][j] || BANTER[ev][j], true), expr: EXPR[ev], at: now,
-    // kids get high voices; the portrait matches the kid standing at that spot (the two near fielders, then the keeper)
-    ...(auntySide ? { who: 'Aunty', x: auntySide, look: AUNTY, pitch: 0.8 } : { who: crew[i], look: look([3, 4, 1][i]), pitch: 1.4 + i * 0.25 }) };
-  speak(say);
+  weather = Object.keys(WEATHER)[Math.random() * 3 | 0];
+  scores = []; inn = 0; st = { runs: 0, wkts: 0, balls: 0, log: [] }; // nothing left over from the last match
+  setMode('toss');
 }
 
 function startInnings(i) {
@@ -306,9 +253,7 @@ function startInnings(i) {
 }
 
 function newBall() {
-  swing = out = aim = say = null; who = -1;
-  if (Math.random() < 0.35) talk('pre');
-  wait = batting && say ? 1300 : 0; // hold the run-up so the sledge can be read
+  swing = out = aim = null; who = -1; auntySide = 0;
   if (!batting) return setMode('aim'); // the player bowls when ready
   ball = { T: 750 + Math.random() * 400, line: (Math.random() * 2 - 1) * 0.3, zb: 0.25 + Math.random() * 0.2, x: 0, y: 0, z: 1 };
   setMode('runup');
@@ -339,7 +284,7 @@ function tap(x) {
   if (mode === 'toss') { call = x < CX ? 'Seedha' : 'Ulta'; coin = pm() < 0 ? 'Seedha' : 'Ulta'; return setMode('flip'); }
   if (mode === 'choose') { first = x < CX ? 'bat' : 'bowl'; return startInnings(0); }
   if ((mode === 'lost' || mode === 'break') && el > 700) return startInnings(mode === 'lost' ? 0 : 1);
-  if (mode === 'over' && el > 700) return setMode('title');
+  if (mode === 'over' && el > 700) return newMatch(); // straight into the next match, same name, new teams
   if (mode !== 'flight' || !batting || swing) return;
   const d = clamp((x - CX) / 150, -1, 1);
   out = shotOutcome(Math.abs(el - ball.T), d, onStumps(), Math.random(), COVERS);
@@ -372,12 +317,12 @@ function finish(o) {
   if (!w && !(RUNS[o] > 1)) tone(o === 'one' ? 660 : 200, 0.1, 'triangle', 0.1);
   else if (w !== batting) jingle(o === 'four' ? [523, 659, 784] : [523, 659, 784, 1047]); // good news for you: boundary hit or wicket taken
   else jingle([392, 330, 262, 196], 'sawtooth');
-  if (o === 'house') talk('house', Math.sign(ball.to.x));
-  else o === 'six' && Math.random() < 0.4 ? talk('aunty', pm()) : talk(o);
+  if (o === 'house') auntySide = Math.sign(ball.to.x);
   applyBall(st, o); setMode('result');
 }
 
 function frame(t) {
+  requestAnimationFrame(frame); // booked first, so one bad frame can never freeze the game for good
   const gap = t - now; // the page was hidden (a call, another app): the ball must not fly on without the player
   if (gap > 250) { t0 += gap; if (ball && ball.hitT) ball.hitT += gap; }
   now = t;
@@ -385,7 +330,7 @@ function frame(t) {
   if (mode === 'flip' && el > 1300) { // toss lost: the other captain picks
     thud(0.08, 0.4, 1200);
     if (call === coin) setMode('choose'); else { first = pm() < 0 ? 'bat' : 'bowl'; setMode('lost'); }
-  } else if (mode === 'runup' && el > wait + (batting ? 900 : 500)) setMode('flight');
+  } else if (mode === 'runup' && el > (batting ? 900 : 500)) setMode('flight');
   else if (mode === 'flight') {
     if (!batting && !swing && el >= b.T - 120) swing = { t: now, d: b.d, hit: out !== 'bowled' }; // AI batter swings
     if (swing && swing.hit && el >= b.T) startHit();
@@ -399,10 +344,8 @@ function frame(t) {
     b.x = lerp(b.from.x, b.to.x, u); b.z = lerp(b.from.z, b.to.z, u);
     b.y = lerp(b.from.y, b.to.y, u) + b.peak * Math.sin(Math.PI * u);
     if (u >= 1) finish(out);
-  } else if (mode === 'result' && el > 1900 && (el > 4000 || !(say.spoke && speechSynthesis.speaking))) // let a spoken line finish, within reason
-    inningsOver(st, target()) ? setMode(inn ? 'over' : 'break') : newBall();
+  } else if (mode === 'result' && el > 1400) inningsOver(st, target()) ? setMode(inn ? 'over' : 'break') : newBall();
   draw();
-  requestAnimationFrame(frame);
 }
 
 // ---------- drawing a frame ----------
@@ -424,7 +367,8 @@ function hud() {
     blob(g, x, 44, 8, 8, w ? '#d8453a' : RUNS[o] > 1 ? '#d9a514' : '#4a6357');
     g.fillStyle = '#fff'; g.fillText(w ? 'W' : RUNS[o] || '•', x, 44.5);
   });
-  if (inn && st.runs < target()) text(`Chahiye ${target() - st.runs} run, ${OVERS * 6 - st.balls} ball mein`, 76, 14, '#ffd23f');
+  // the chase line belongs to live play only, not the result screen of a failed chase
+  if (inn && PLAY.includes(mode) && st.runs < target()) text(`Chahiye ${target() - st.runs} run, ${OVERS * 6 - st.balls} ball mein`, 76, 14, '#ffd23f');
 }
 
 function buttons(l, r) { // every two-way choice: tap the left or right half
@@ -461,30 +405,6 @@ function aunty(side) { // leans out of the window the ball went into
   g.restore();
 }
 
-function portrait() { // close-up of whoever is talking; their words are spoken, and only written out when there is no voice
-  const g = ctx, y = 236, x = say.x && (batting ? say.x : -say.x) < 0 ? W - 50 : 50; // keep off the aunty's window
-  const talking = say.spoke ? speechSynthesis.speaking : now - say.at < 1800;
-  blob(g, x, y, 40, 40, '#ffd23f'); g.strokeStyle = INK; g.lineWidth = 3; g.stroke();
-  g.save(); g.beginPath(); g.arc(x, y, 38.5, 0, 7); g.clip();
-  g.translate(x, y + 4); g.scale(1.45, 1.45);
-  box(g, -16, 15, 32, 30, 8, say.look.shirt); g.strokeStyle = INK; g.lineWidth = 2.2; g.stroke();
-  head(g, { ...say.look, expr: say.expr, talk: talking });
-  g.restore();
-  box(g, x - 36, y + 31, 72, 18, 9, INK); g.fillStyle = '#fff'; g.textAlign = 'center'; g.font = `bold 11px ${FONT}`; g.fillText(say.who, x, y + 40.5, 64);
-  if (say.spoke || now - say.at < 700) return; // give the voice a moment to start before falling back to text
-  const lines = [''], bw = 170, bx = x < CX ? 100 : W - 100 - bw, tip = x < CX ? bx : bx + bw; // speech bubble beside the portrait
-  g.font = `bold 12px ${FONT}`;
-  say.t.split(' ').forEach(w => {
-    const l = lines[lines.length - 1];
-    if (l && g.measureText(l + ' ' + w).width > bw - 16) lines.push(w); else lines[lines.length - 1] = l ? l + ' ' + w : w;
-  });
-  const bh = lines.length * 15 + 12, by = y - bh / 2;
-  poly(g, [{ x: tip, y: y - 7 }, { x: tip, y: y + 7 }, { x: tip + (x < CX ? -10 : 10), y }], '#fffdf2');
-  box(g, bx, by, bw, bh, 10, '#fffdf2'); g.strokeStyle = INK; g.lineWidth = 2; g.stroke();
-  g.fillStyle = INK; g.textAlign = 'left';
-  lines.forEach((l, i) => g.fillText(l, bx + 8, by + 14 + i * 15));
-}
-
 function draw() {
   const g = ctx, el = now - t0, live = mode === 'hit' || mode === 'result';
   if (batting) g.drawImage(bg, 0, 0, W, H);
@@ -497,7 +417,7 @@ function draw() {
   FIELD.forEach((f, i) => {
     let { x, z } = f, pose;
     if (i === 0 && mode === 'aim') z = 1.15; // waiting at the top of a short run-up
-    if (i === 0 && mode === 'runup') { z = batting ? 1.3 - 0.3 * clamp((el - wait) / 900, 0, 1) : 1.15 - 0.15 * Math.min(1, el / 500); if (el > wait) pose = 'run'; }
+    if (i === 0 && mode === 'runup') { z = batting ? 1.3 - 0.3 * Math.min(1, el / 900) : 1.15 - 0.15 * Math.min(1, el / 500); pose = 'run'; }
     if (i === 0 && mode === 'flight' && el < 260) pose = 'bowl';
     if (live && who === i && out === 'one') { x = lerp(x, ball.to.x, hitU); z = lerp(z, ball.to.z, hitU); if (hitU < 1) pose = 'run'; }
     if (live && who === i && out === 'caught' && hitU > 0.6) pose = 'catch';
@@ -519,7 +439,7 @@ function draw() {
       blob(g, q.x, q.y, 7 * q.s, 2.5 * q.s, 'rgba(40,30,55,.3)');
       blob(g, p.x, p.y, r, r, '#d9ea3f'); g.strokeStyle = '#6b7a12'; g.lineWidth = 1; g.stroke();
     } });
-  if (say && say.who === 'Aunty' && mode === 'result') aunty(say.x);
+  if (auntySide && mode === 'result') aunty(auntySide);
   E.sort((a, b) => vz(b.z) - vz(a.z)).forEach(o => o.f());
 
   const tint = WEATHER[weather][1];
@@ -529,7 +449,6 @@ function draw() {
     for (let i = 0; i < 40; i++) { const x = (i * 97 + now * 0.05) % W, y = (i * 53 + now * 0.5) % H; line(g, x, y, x - 3, y + 10); }
   }
   if (mine.length) hud();
-  if (say && (mode === 'aim' || mode === 'runup' || mode === 'result')) portrait();
   if (mode === 'aim') {
     if (aim) { // where the ball will pitch
       const p = V(lerp(0.08, aim.line, 1 - aim.zb), aim.zb);
@@ -582,7 +501,6 @@ function draw() {
 
 const at = ev => { const r = cv.getBoundingClientRect(); return [(ev.clientX - r.left) / r.width * W, (ev.clientY - r.top) / r.height * H]; };
 cv.addEventListener('pointerdown', ev => {
-  if (!ac && window.speechSynthesis) speechSynthesis.speak(new SpeechSynthesisUtterance('')); // first touch: iPhones only allow speech a touch has started
   ac ||= new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); // browsers only allow sound after a touch
   if (!PLAY.includes(mode)) tone(880, 0.04, 'square', 0.05);
   const [x, y] = at(ev); mode === 'aim' ? setAim(x, y) : tap(x);
@@ -593,10 +511,9 @@ cv.addEventListener('pointercancel', () => { aim = null; });
 nameEl.addEventListener('keydown', ev => { if (ev.key === 'Enter') newMatch(); });
 const muteEl = document.getElementById('mute');
 function setMute(m) {
-  muted = m; if (m && window.speechSynthesis) speechSynthesis.cancel(); muteEl.textContent = m ? '🔇' : '🔊'; muteEl.setAttribute('aria-pressed', m);
+  muted = m; muteEl.textContent = m ? '🔇' : '🔊'; muteEl.setAttribute('aria-pressed', m);
   try { localStorage.gullyMute = m ? 1 : ''; } catch {}
 }
 muteEl.addEventListener('click', () => setMute(!muted));
 try { nameEl.value = localStorage.gullyName || ''; setMute(!!localStorage.gullyMute); } catch {}
-if (window.speechSynthesis) speechSynthesis.getVoices(); // the voice list loads in the background; ask early
 requestAnimationFrame(frame);
