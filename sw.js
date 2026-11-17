@@ -4,12 +4,14 @@ const FILES = ['./', 'index.html', 'logic.js', 'game.js', 'manifest.json', 'icon
 
 self.addEventListener('install', e => e.waitUntil(caches.open('gully').then(c => c.addAll(FILES))));
 
-self.addEventListener('fetch', e => e.respondWith(
-  caches.open('gully').then(c => c.match(e.request, { ignoreSearch: true }).then(hit => {
+self.addEventListener('fetch', e => {
+  // analytics must reach Vercel live, never from the cache; and only GETs can be cached at all
+  if (e.request.method !== 'GET' || new URL(e.request.url).pathname.startsWith('/_vercel/')) return;
+  e.respondWith(caches.open('gully').then(c => c.match(e.request, { ignoreSearch: true }).then(hit => {
     const fresh = fetch(e.request)
       .then(r => { if (r.ok) c.put(e.request, r.clone()); return r; }) // never save an error page over a good copy
       .catch(() => hit);
     e.waitUntil(fresh);
     return hit || fresh;
-  }))
-));
+  })));
+});
